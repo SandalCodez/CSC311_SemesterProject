@@ -99,8 +99,6 @@ public class DB_GUI_Controller implements Initializable {
     }
     }
 
-
-
     private void validateFormFields(){
         boolean valid = isFormValid();
         addBtn.setDisable(!valid);
@@ -110,6 +108,36 @@ public class DB_GUI_Controller implements Initializable {
         if(tv.getSelectionModel().getSelectedItem() != null){
             editBtn.setDisable(!valid);
             if(menuEdit != null) menuEdit.setDisable(!valid);
+        }
+
+        FieldRegex fieldCheck = new FieldRegex();
+
+        if(!(first_name.getText().isEmpty() && last_name.getText().isEmpty() && department.getText().isEmpty() && email.getText().isEmpty())&&
+                !fieldCheck.FieldRegex(first_name.getText(), last_name.getText(), department.getText(), email.getText())) {
+            sysErrorLabel.setText("There is an an error in one of your fields.");
+        }else{
+            sysErrorLabel.setText("");
+        }
+
+        if(!first_name.getText().isEmpty() && !fieldCheck.firstnameMatch(first_name.getText())){
+            fNameLabel.setText("First name invalid");
+        }else{
+            fNameLabel.setText("");
+        }
+        if(!last_name.getText().isEmpty() && !fieldCheck.lastNameMatch(last_name.getText())){
+            lNameLabel.setText("Last name invalid");
+        }else{
+            lNameLabel.setText("");
+        }
+        if(!department.getText().isEmpty() && !fieldCheck.departmentMatch(department.getText())){
+            departmentLabel.setText("Department invalid");
+        }else{
+            departmentLabel.setText("");
+        }
+        if(!email.getText().isEmpty() && !fieldCheck.emailMatch(email.getText())){
+            emailLabel.setText("Email invalid");
+        }else{
+            emailLabel.setText("");
         }
     }
 
@@ -137,25 +165,25 @@ public class DB_GUI_Controller implements Initializable {
         sysErrorLabel.setText("");fNameLabel.setText("");lNameLabel.setText("");
         departmentLabel.setText("");majorLabel.setText("");emailLabel.setText("");
 
-        FieldRegex fieldCheck = new FieldRegex();
-        boolean check = fieldCheck.FieldRegex(first_name.getText(), last_name.getText(),department.getText(),email.getText());
-
-        if(!check){
-            sysErrorLabel.setText("There is an error in one of your fields");
-            if(!fieldCheck.firstnameMatch(first_name.getText())){
-                fNameLabel.setText("First name invalid");
-            }
-            if(!fieldCheck.lastNameMatch(last_name.getText())){
-                lNameLabel.setText("Last name invalid");
-            }
-            if(!fieldCheck.departmentMatch(department.getText())){
-                departmentLabel.setText("Department invalid");
-            }
-            if(!fieldCheck.emailMatch(email.getText())){
-                emailLabel.setText("Email invalid");
-            }
-            return;
-        }else {
+//        FieldRegex fieldCheck = new FieldRegex();
+//        boolean check = fieldCheck.FieldRegex(first_name.getText(), last_name.getText(),department.getText(),email.getText());
+//
+//        if(!check){
+//            sysErrorLabel.setText("There is an error in one of your fields");
+//            if(!fieldCheck.firstnameMatch(first_name.getText())){
+//                fNameLabel.setText("First name invalid");
+//            }
+//            if(!fieldCheck.lastNameMatch(last_name.getText())){
+//                lNameLabel.setText("Last name invalid");
+//            }
+//            if(!fieldCheck.departmentMatch(department.getText())){
+//                departmentLabel.setText("Department invalid");
+//            }
+//            if(!fieldCheck.emailMatch(email.getText())){
+//                emailLabel.setText("Email invalid");
+//            }
+//            return;
+//        }else {
             Person p = new Person(first_name.getText(), last_name.getText(), department.getText(),
                     major.getValue(), email.getText(), imageURL.getText());
             cnUtil.insertUser(p);
@@ -164,7 +192,7 @@ public class DB_GUI_Controller implements Initializable {
             data.add(p);
             clearForm();
             sysErrorLabel.setText("User added successfully!");
-        }
+//        }
 
     }
 
