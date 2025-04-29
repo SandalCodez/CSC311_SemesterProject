@@ -28,6 +28,8 @@
                                 <MenuItem fx:id="newItem" mnemonicParsing="false" onAction="#addRecord" styleClass="menu_items" text="New" />
                                 <MenuItem fx:id="ChangePic" mnemonicParsing="false" onAction="#showImage" styleClass="menu_items" text="Change Pic" />
                                 <MenuItem fx:id="logOut" mnemonicParsing="false" onAction="#logOut" styleClass="menu_items" text="Log out" />
+                        <MenuItem fx:id="importCSVMenuItem" mnemonicParsing="false" onAction="#importCSV" text="Import CSV" />
+                        <MenuItem fx:id="exportCSVMenuItem" mnemonicParsing="false" onAction="#exportCSV" text="Export CSV" />
                                 <MenuItem mnemonicParsing="false" onAction="#closeApplication" styleClass="menu_items" text="Exit Program" />
                             </items>
                         </Menu>
@@ -72,7 +74,7 @@
             <bottom>
                 <HBox prefHeight="30.0" prefWidth="892.0" styleClass="admin_section" BorderPane.alignment="CENTER">
                <children>
-                  <Label fx:id="sysErrorLabel" alignment="CENTER" contentDisplay="CENTER" prefHeight="30.0" prefWidth="933.0" />
+                  <Label fx:id="sysErrorLabel" alignment="CENTER" contentDisplay="CENTER" prefHeight="30.0" prefWidth="933.0" textFill="#ee0000" />
                </children></HBox>
             </bottom>
          <right>

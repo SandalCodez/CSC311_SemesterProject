@@ -21,7 +21,7 @@ import javafx.stage.Stage;
 import model.Person;
 import service.MyLogger;
 
-import java.io.File;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.time.LocalDate;
@@ -40,6 +40,8 @@ public class DB_GUI_Controller implements Initializable {
     MenuBar menuBar;
     @FXML
     private MenuItem menuAdd, menuEdit, menuDelete, menuClear;
+    @FXML
+    private MenuItem menuImportCSV, menuExportCSV;
     @FXML
     private TableView<Person> tv;
     @FXML
@@ -90,6 +92,14 @@ public class DB_GUI_Controller implements Initializable {
         if(menuEdit != null) menuEdit.setDisable(!hasSelection);
         if(menuDelete != null) menuDelete.setDisable(!hasSelection);
     }
+
+    private void updateSystemStatus(String status){
+    if(sysErrorLabel != null) {
+        sysErrorLabel.setText(status);
+    }
+    }
+
+
 
     private void validateFormFields(){
         boolean valid = isFormValid();
@@ -321,4 +331,107 @@ public class DB_GUI_Controller implements Initializable {
         }
     }
 
+    @FXML
+    protected void importCSV(ActionEvent actionEvent) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open Resource File");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV file(*.csv)", "*.csv"));
+
+        File file = fileChooser.showOpenDialog(img_view.getScene().getWindow());
+        if (file != null) {
+            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                String line;
+                br.readLine();
+
+                int importedRecords = 0;
+                int failedRecords = 0;
+
+                while ((line = br.readLine()) != null) {
+                    String[] fields = line.split(",");
+                    if (fields.length >= 5) {
+                        try {
+                            String fName = fields[0].trim();
+                            String lName = fields[1].trim();
+                            String dept = fields[2].trim();
+                            String maj = fields[3].trim();
+                            String em = fields[4].trim();
+                            String img = fields.length > 5 ? fields[5].trim() : "";
+
+                            // Add the new person to database
+                            Person p = new Person(fName, lName, dept, maj, em, img);
+                            cnUtil.insertUser(p);
+
+                            // Retrieve the generated ID
+                            p.setId(cnUtil.retrieveId(p));
+
+                            // Add to the table
+                            data.add(p);
+                            importedRecords++;
+
+
+                        } catch (Exception e) {
+                            failedRecords++;
+                            System.err.println("Error importing" + line);
+                            e.printStackTrace();
+                        }
+                    } else {
+                        failedRecords++;
+                    }
+                }
+                updateSystemStatus("imported " + importedRecords + " records");
+            }catch(Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Import Error");
+            alert.setHeaderText("Error importing CSV");
+            alert.setContentText("Error while importing: " + e.getMessage());
+            alert.showAndWait();
+            updateSystemStatus("Error importing CSV. Culprit: " + e.getMessage());
+            }
+        }
+    }
+    @FXML
+    protected void exportCSV(ActionEvent actionEvent) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Export CSV File");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv"));
+
+        File file = fileChooser.showSaveDialog(tv.getScene().getWindow());
+
+        if (file != null) {
+            try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
+                // Write header
+                writer.println("FirstName,LastName,Department,Major,Email,ImageURL");
+
+                // Write data
+                for (Person person : data) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(escapeCSV(person.getFirstName())).append(",");
+                    sb.append(escapeCSV(person.getLastName())).append(",");
+                    sb.append(escapeCSV(person.getDepartment())).append(",");
+                    sb.append(escapeCSV(person.getMajor())).append(",");
+                    sb.append(escapeCSV(person.getEmail())).append(",");
+                    sb.append(escapeCSV(person.getImageURL()));
+                    writer.println(sb.toString());
+                }
+
+                updateSystemStatus("Export complete: " + data.size() + " records exported to " + file.getName());
+
+            } catch (IOException e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Export Error");
+                alert.setHeaderText("Error Exporting CSV");
+                alert.setContentText("An error occurred while exporting the file: " + e.getMessage());
+                alert.showAndWait();
+                updateSystemStatus("Export failed: " + e.getMessage());
+            }
+        }
+    }
+    private String escapeCSV(String s) {
+        if(s == null) return "";
+
+        if(s.contains(",") || s.contains("\"") || s.contains("\n")){
+            return "\"" + s.replace("\"", "\"\"") + "\"";
+        }return s;
+    }
 }
